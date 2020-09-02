@@ -10,6 +10,15 @@ public class Material {
     String led_bin;
     Date date_in;
 
+    public Material(String date_code, String model, String item_name,String led_bin, String factory , Date date_in) {
+        this.date_code = date_code;
+        this.model = model;
+        this.item_name = item_name;
+        this.factory = factory;
+        this.led_bin = led_bin;
+        this.date_in = date_in;
+    }
+
     public Material(String date_code) {
         this.date_code = date_code;
     }
