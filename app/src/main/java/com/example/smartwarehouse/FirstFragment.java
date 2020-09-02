@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.smartwarehouse.model.Item;
 import com.example.smartwarehouse.model.ItemList;
@@ -24,6 +26,8 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +39,7 @@ public class FirstFragment extends Fragment {
 
     private FirebaseFirestore db;
     ItemList items = new ItemList();
+    private RecyclerView recyclerView;
 
     @Override
     public View onCreateView(
@@ -59,6 +64,47 @@ public class FirstFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         //prepareDatas
         //prepareDatas();
+
+        recyclerView = view.findViewById(R.id.check_recycler);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this.getContext()));
+
+        final List<Item> items = new ArrayList<>();
+        db.collection("checkList")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+
+                                Log.d(TAG, document.getId() + " =>tables " + document.getData().keySet());
+                                for (String key : document.getData().keySet()) {
+                                    Log.d(TAG, "onComplete: tables"+key+"=>"+document.getBoolean(key));
+                                    Item item = new Item();
+                                    item.setItem_model(key);
+                                    item.setChecked(document.getBoolean(key));
+                                    items.add(item);
+
+                                }
+
+                                Collections.sort( items, new Comparator<Item>(){
+                                    public int compare( Item l1, Item l2 ) {
+                                        // 回傳值: -1 前者比後者小, 0 前者與後者相同, 1 前者比後者大
+                                        return l1.getItem_model().toString().toLowerCase().compareTo(l2.getItem_model().toString().toLowerCase());
+                                    }});
+
+
+
+                                ItemAdapter itemAdapter = new ItemAdapter(items);
+                                recyclerView.setAdapter(itemAdapter);
+                            }
+                            Log.d(TAG, "onComplete: "+items.size());
+                        } else {
+                            Log.w(TAG, "Error getting documents.", task.getException());
+                        }
+                    }
+                });
 
 
     }
