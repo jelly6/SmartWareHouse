@@ -19,8 +19,12 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -32,6 +36,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 import static android.content.ContentValues.TAG;
 
@@ -69,42 +75,45 @@ public class FirstFragment extends Fragment {
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this.getContext()));
 
-        final List<Item> items = new ArrayList<>();
-        db.collection("checkList")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
+        final List<Item>[] items = new List[]{new ArrayList<>()};
+        CollectionReference docRef = db.collection("checkList");
+        docRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    System.err.println("Listen failed: " + e);
+                    return;
+                }else{
+                    items[0] = new ArrayList<>();
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
 
-                                Log.d(TAG, document.getId() + " =>tables " + document.getData().keySet());
-                                for (String key : document.getData().keySet()) {
-                                    Log.d(TAG, "onComplete: tables"+key+"=>"+document.getBoolean(key));
-                                    Item item = new Item();
-                                    item.setItem_model(key);
-                                    item.setChecked(document.getBoolean(key));
-                                    items.add(item);
+                        Log.d(TAG, document.getId() + " =>tables " + document.getData().keySet());
+                        for (String key : document.getData().keySet()) {
+                            Log.d(TAG, "onComplete: tables"+key+"=>"+document.getBoolean(key));
+                            Item item = new Item();
+                            item.setItem_model(key);
+                            item.setChecked(document.getBoolean(key));
+                            items[0].add(item);
 
-                                }
-
-                                Collections.sort( items, new Comparator<Item>(){
-                                    public int compare( Item l1, Item l2 ) {
-                                        // 回傳值: -1 前者比後者小, 0 前者與後者相同, 1 前者比後者大
-                                        return l1.getItem_model().toString().toLowerCase().compareTo(l2.getItem_model().toString().toLowerCase());
-                                    }});
-
-
-
-                                ItemAdapter itemAdapter = new ItemAdapter(items);
-                                recyclerView.setAdapter(itemAdapter);
-                            }
-                            Log.d(TAG, "onComplete: "+items.size());
-                        } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
                         }
+
+                        Collections.sort(items[0], new Comparator<Item>(){
+                            public int compare( Item l1, Item l2 ) {
+                                // 回傳值: -1 前者比後者小, 0 前者與後者相同, 1 前者比後者大
+                                return l1.getItem_model().toString().toLowerCase().compareTo(l2.getItem_model().toString().toLowerCase());
+                            }});
+
+
+
+                        ItemAdapter itemAdapter = new ItemAdapter(items[0]);
+                        recyclerView.setAdapter(itemAdapter);
                     }
-                });
+                    Log.d(TAG, "onComplete: "+ items[0].size());
+                }
+
+            }
+        });
+
 
 
     }
