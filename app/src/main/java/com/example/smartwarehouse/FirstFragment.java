@@ -1,12 +1,21 @@
 package com.example.smartwarehouse;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -27,8 +36,12 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
-import java.lang.reflect.Type;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -41,11 +54,15 @@ import javax.annotation.Nullable;
 
 import static android.content.ContentValues.TAG;
 
-public class FirstFragment extends Fragment {
+public class FirstFragment extends Fragment implements View.OnClickListener {
 
     private FirebaseFirestore db;
     ItemList items = new ItemList();
     private RecyclerView recyclerView;
+    private Button btn_scan;
+    private IntentIntegrator qrScan;
+    private int REQUEST_CODE=100;
+    private TextView textView;
 
     @Override
     public View onCreateView(
@@ -70,10 +87,8 @@ public class FirstFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         //prepareDatas
         //prepareDatas();
-
-        recyclerView = view.findViewById(R.id.check_recycler);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this.getContext()));
+        //viewUnitsSetup
+        viewUnitsSetup(view);
 
         final List<Item>[] items = new List[]{new ArrayList<>()};
         CollectionReference docRef = db.collection("checkList");
@@ -116,6 +131,16 @@ public class FirstFragment extends Fragment {
 
 
 
+    }
+
+    private void viewUnitsSetup(@NonNull View view) {
+        btn_scan = view.findViewById(R.id.button_scan);
+        btn_scan.setOnClickListener(this);
+        qrScan = new IntentIntegrator(this.getActivity());
+        recyclerView = view.findViewById(R.id.check_recycler);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this.getContext()));
+        textView = view.findViewById(R.id.textview_first);
     }
 
     private void prepareDatas() {
@@ -216,5 +241,57 @@ public class FirstFragment extends Fragment {
             mm.put(material.getModel(), material.getDate_code());
         }
         return mm;
+    }
+
+    @Override
+    public void onClick(View v) {
+        int permission_check =ContextCompat.checkSelfPermission(this.getContext(), Manifest.permission.CAMERA);
+        if(permission_check== PackageManager.PERMISSION_GRANTED){
+            qrScan.initiateScan();
+        }else{
+            ActivityCompat.requestPermissions(this.getActivity(),new String[]{Manifest.permission.CAMERA}, REQUEST_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode ==REQUEST_CODE){
+            if(grantResults[0]==PackageManager.PERMISSION_GRANTED){
+                qrScan.initiateScan();
+            }
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @androidx.annotation.Nullable Intent data) {
+
+        IntentResult result=IntentIntegrator.parseActivityResult(requestCode,resultCode,data);
+        if(result!=null){
+            if(result.getContents() == null){
+                Toast.makeText(this.getContext(),"Result not found",Toast.LENGTH_LONG).show();
+            }else{
+                try {
+                    //converting the data to json
+                    //JSONObject obj = new JSONObject(result.getContents());
+                    //setting values to textviews
+                    //Log.d(TAG, "onActivityResult: "+result.getContents());
+                    /*textViewName.setText(obj.getString("name"));
+                    textViewAddress.setText(obj.getString("address"));*/
+                    textView.setText(result.getContents()+"");
+                    Toast.makeText(this.getContext(), result.getContents(), Toast.LENGTH_LONG).show();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    //if control comes here
+                    //that means the encoded format not matches
+                    //in this case you can display whatever data is available on the qrcode
+                    //to a toast
+                    Toast.makeText(this.getContext(), result.getContents(), Toast.LENGTH_LONG).show();
+                }
+            }
+        }else{
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 }
