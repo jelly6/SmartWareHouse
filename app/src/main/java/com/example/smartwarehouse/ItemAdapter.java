@@ -18,9 +18,19 @@ import java.util.List;
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder> {
 
     private static final String TAG = ItemAdapter.class.getSimpleName();
-    List<Item> items;
+    private List<Item> items;
+
+    public List<Item> getItems() {
+        return items;
+    }
+
     public ItemAdapter(List<Item> items) {
         this.items=items;
+    }
+    public ItemAdapter(){}
+
+    public void setItems(List<Item> items) {
+        this.items = items;
     }
 
     @NonNull
