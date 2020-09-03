@@ -144,6 +144,7 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
         ItemList itemList = new ItemList();
         final String doc = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("DOC",
                 "");
+        final String[] msg = {"取料錯誤，請重新取料"};
         db.collection("tables")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -159,6 +160,7 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
                                         Map<String, Object> new_check = new HashMap<>();
                                         new_check.put(key, true);
                                         Log.d(TAG, "onComplete: YY"+db.collection("checkList").get().toString());
+                                        msg[0] = "取料正確!!";
                                         db.collection("checkList")
                                                 .document(doc)
                                                 .update(new_check)
@@ -166,6 +168,7 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
                                                     @Override
                                                     public void onSuccess(Void aVoid) {
                                                         Log.d(TAG, "onSuccess: YY");
+                                                        Toast.makeText(getActivity(), msg[0], Toast.LENGTH_LONG).show();
                                                     }
                                                 })
                                                 .addOnFailureListener(new OnFailureListener() {
@@ -180,6 +183,7 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
 
                                     }
                                 }
+                                Toast.makeText(getActivity(), msg[0], Toast.LENGTH_LONG).show();
 
                             }
                             Log.d(TAG, "onComplete: "+items.getKeys());
@@ -340,7 +344,7 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
                     /*textViewName.setText(obj.getString("name"));
                     textViewAddress.setText(obj.getString("address"));*/
                     textView.setText(result.getContents()+"");
-                    Toast.makeText(getActivity(), result.getContents(), Toast.LENGTH_LONG).show();
+                    //Toast.makeText(getActivity(), result.getContents(), Toast.LENGTH_LONG).show();
                     checkItem();
                 } catch (Exception e) {
                     e.printStackTrace();
