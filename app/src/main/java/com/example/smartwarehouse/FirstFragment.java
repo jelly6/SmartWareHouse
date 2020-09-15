@@ -11,7 +11,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,6 +48,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -68,6 +72,7 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
     private TextView textView;
     ItemAdapter itemAdapter;
     List<Item> listData;
+    private Spinner spinner;
 
     @Override
     public View onCreateView(
@@ -113,24 +118,42 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
                     Log.d(TAG, "onEvent: YY"+queryDocumentSnapshots.getDocuments().get(0).getReference().getId());
                     PreferenceManager.getDefaultSharedPreferences(getActivity()).edit()
                             .putString("DOC",queryDocumentSnapshots.getDocuments().get(0).getReference().getId()).commit();
+                    List<String> spinnerStrings = new ArrayList<>();
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         Log.d(TAG, document.getId() + " =>tables " + document.getData().keySet());
-                        for (String key : document.getData().keySet()) {
-                            Log.d(TAG, "onComplete: tables"+key+"=>"+document.getBoolean(key));
-                            Item item = new Item();
-                            item.setItem_model(key);
-                            item.setChecked(document.getBoolean(key));
-                            items[0].add(item);
+                        spinnerStrings.add(document.getId());
+                    }
+                    if(spinnerStrings.size()>0){
+                        spinner.setAdapter(new ArrayAdapter<String>(getContext(),android.R.layout.simple_spinner_dropdown_item,spinnerStrings));
+                        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                            @Override
+                            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                DocumentSnapshot document = queryDocumentSnapshots.getDocuments().get(position);
+                                items[0]=new ArrayList<>();
+                                for (String key : document.getData().keySet()) {
+                                    Log.d(TAG, "onComplete: tables"+key+"=>"+document.getBoolean(key));
+                                    Item item = new Item();
+                                    item.setItem_model(key);
+                                    item.setChecked(document.getBoolean(key));
+                                    items[0].add(item);
 
-                        }
+                                }
 
-                        Collections.sort(items[0], new Comparator<Item>(){
-                            public int compare( Item l1, Item l2 ) {
-                                // 回傳值: -1 前者比後者小, 0 前者與後者相同, 1 前者比後者大
-                                return l1.getItem_model().toString().toLowerCase().compareTo(l2.getItem_model().toString().toLowerCase());
-                            }});
-                        itemAdapter=new ItemAdapter(items[0]);
-                        recyclerView.setAdapter(itemAdapter);
+                                Collections.sort(items[0], new Comparator<Item>(){
+                                    public int compare( Item l1, Item l2 ) {
+                                        // 回傳值: -1 前者比後者小, 0 前者與後者相同, 1 前者比後者大
+                                        return l1.getItem_model().toString().toLowerCase().compareTo(l2.getItem_model().toString().toLowerCase());
+                                    }});
+                                itemAdapter=new ItemAdapter(items[0]);
+                                recyclerView.setAdapter(itemAdapter);
+                            }
+
+                            @Override
+                            public void onNothingSelected(AdapterView<?> parent) {
+
+                            }
+                        });
+
                     }
                     Log.d(TAG, "onComplete: "+ items[0].size());
                 }
@@ -204,6 +227,9 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this.getContext()));
         textView = view.findViewById(R.id.textview_first);
+        spinner = view.findViewById(R.id.check_spinner);
+
+
     }
 
     private void prepareDatas() {
