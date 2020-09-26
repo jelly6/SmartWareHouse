@@ -116,8 +116,7 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
                 }else{
                     items[0] = new ArrayList<>();
                     Log.d(TAG, "onEvent: YY"+queryDocumentSnapshots.getDocuments().get(0).getReference().getId());
-                    PreferenceManager.getDefaultSharedPreferences(getActivity()).edit()
-                            .putString("DOC",queryDocumentSnapshots.getDocuments().get(0).getReference().getId()).commit();
+
                     List<String> spinnerStrings = new ArrayList<>();
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         Log.d(TAG, document.getId() + " =>tables " + document.getData().keySet());
@@ -128,6 +127,8 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
                         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                             @Override
                             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                PreferenceManager.getDefaultSharedPreferences(getActivity()).edit()
+                                        .putString("DOC",spinnerStrings.get(position)).commit();
                                 DocumentSnapshot document = queryDocumentSnapshots.getDocuments().get(position);
                                 items[0]=new ArrayList<>();
                                 for (String key : document.getData().keySet()) {

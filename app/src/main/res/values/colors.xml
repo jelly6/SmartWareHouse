@@ -3,4 +3,9 @@
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
+    <color name="checkList_color_deepBlue">#3035B3</color>
+    <color name="checkList_color_lightBlue">#8589EA</color>
+    <color name="checkList_color_yellow">#E6C53E</color>
+    <color name="checkList_color_red">#E65955</color>
+
 </resources>
