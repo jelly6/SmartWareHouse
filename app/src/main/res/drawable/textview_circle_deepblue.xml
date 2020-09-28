@@ -4,7 +4,7 @@
     <!-- 圓角邊框 -->
 
     <!-- 實心 背景色-->
-    <!--solid android:color="@color/checkList_color_deepBlue"/-->
+    <solid android:color="@color/checkList_color_deepBlue"/>
     <!-- 邊框 顏色-->
     <stroke
         android:width="0.5dp"

@@ -1,5 +1,6 @@
 package com.example.smartwarehouse;
 
+import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,21 +42,24 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull ItemViewHolder holder, int position) {
+        holder.item_model.setBackgroundResource(R.drawable.textview_circle_black);
+        holder.item_position.setBackgroundResource(R.drawable.textview_circle_black);
+        holder.item_check.setBackgroundResource(R.drawable.textview_circle_black);
         if(position==0){
             holder.textView.setVisibility(View.VISIBLE);
             holder.item_check.setVisibility(View.INVISIBLE);
-            holder.item_model.setBackgroundResource(R.drawable.textview_circle_black);
-            holder.item_position.setBackgroundResource(R.drawable.textview_circle_black);
-            holder.textView.setBackgroundResource(R.drawable.textview_circle_black);
-//            holder.textView.setBackgroundColor(Color.parseColor(getString(R.string.checkLiat_color_lightBlue)));
-            //holder.item_model.setBackgroundColor(Color.parseColor("#3035B3"));
-            //holder.item_position.setBackgroundColor(Color.parseColor("#3035B3"));
+            holder.item_model.setBackgroundResource(R.drawable.textview_circle_deepblue);
+            holder.item_position.setBackgroundResource(R.drawable.textview_circle_deepblue);
+            holder.textView.setBackgroundResource(R.drawable.textview_circle_deepblue);
+            holder.textView.setTextColor(Color.WHITE);
+            holder.item_model.setTextColor(Color.WHITE);
+            holder.item_position.setTextColor(Color.WHITE);
+
         }else{
             holder.textView.setVisibility(View.INVISIBLE);
             holder.item_check.setVisibility(View.VISIBLE);
             holder.item_model.setBackgroundResource(R.drawable.textview_circle_light);
-            holder.item_position.setBackgroundResource(R.drawable.textview_circle_light);
-            holder.item_check.setBackgroundResource(R.drawable.textview_circle_light);
+
             Item item = items.get(position-1);
             holder.item_model.setText(item.getItem_model());
             holder.item_position.setText(item.getPosition());
