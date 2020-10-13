@@ -2,21 +2,31 @@ package com.example.smartwarehouse;
 
 import android.Manifest;
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.CamcorderProfile;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.camera.core.Camera;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.Preview;
+import androidx.camera.core.impl.PreviewConfig;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.navigation.fragment.NavHostFragment;
 
 import android.util.Log;
@@ -25,11 +35,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import java.util.concurrent.ExecutionException;
+
 import static android.content.ContentValues.TAG;
 import static com.google.zxing.integration.android.IntentIntegrator.REQUEST_CODE;
 
 public class MainActivity extends AppCompatActivity {
     private IntentIntegrator qrScan;
+    private ImageCapture imageCapture;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,14 +56,22 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 int permission_check = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA);
-                if(permission_check== PackageManager.PERMISSION_GRANTED){
-                    qrScan.initiateScan();
-                }else{
+                if(permission_check!= PackageManager.PERMISSION_GRANTED){
                     ActivityCompat.requestPermissions(MainActivity.this,new String[]{Manifest.permission.CAMERA}, REQUEST_CODE);
+                }else{
+                    try{
+                        NavHostFragment.findNavController(getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment))
+                                .navigate(R.id.action_FirstFragment_to_thirdFragment);
+                    }catch (Exception e){
+                        NavHostFragment.findNavController(getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment))
+                                .navigate(R.id.action_SecondFragment_to_thirdFragment);
+                    }
                 }
             }
         });
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -68,6 +89,10 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            return true;
+        }
+        if (id == R.id.action_add_new) {
+            startActivity(new Intent(MainActivity.this,CameraActivity.class));
             return true;
         }
 
