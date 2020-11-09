@@ -1,2 +1,3 @@
+include ':snowing'
 rootProject.name='SmartWareHouse'
 include ':app'

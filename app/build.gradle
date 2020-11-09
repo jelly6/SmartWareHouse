@@ -29,6 +29,7 @@ android {
 }
 
 dependencies {
+    implementation project(path: ':snowing')
     def camerax_version = "1.0.0-beta07"
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])

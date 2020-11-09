@@ -12,7 +12,8 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import com.google.protobuf.Value;
+import com.example.smartwarehouse.viewDesign.MazeSolver;
+import com.example.smartwarehouse.viewDesign.Pos;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +32,9 @@ public class DrawView extends View {
     private Map<Integer,Integer> target_cabinet;
     List<String> capital = Arrays.asList(new String[]{"A","B","C","D","E","F"});
     String[] stuff = {"A101","B203","F504","D901"};
+    private Map<int[], Integer> hashMap;
+    private HashMap<Pos, Pos> mapCenter;
+    private MazeSolver mazeSolver;
 
     public DrawView(Context context) {
         super(context);
@@ -54,13 +58,42 @@ public class DrawView extends View {
             target_cabinet.put(capital.indexOf(String.valueOf(words.charAt(0))), (int) words.charAt(1));
         }
 
-
-
-
         //drawCabinets
         drawCabinets();
         //drawGrid
         //drawGrid();
+//        int[][] mat =
+//                {
+//                        { 1, 1, 1, 1, 1, 0, 0, 1, 1, 1 },
+//                        { 0, 1, 1, 1, 1, 1, 0, 1, 0, 1 },
+//                        { 0, 0, 1, 0, 1, 1, 1, 0, 0, 1 },
+//                        { 1, 0, 1, 1, 1, 0, 1, 1, 0, 1 },
+//                        { 0, 0, 0, 1, 0, 0, 0, 1, 0, 1 },
+//                        { 1, 0, 1, 1, 1, 0, 0, 1, 1, 0 },
+//                        { 0, 0, 0, 0, 1, 0, 0, 1, 0, 1 },
+//                        { 0, 1, 1, 1, 1, 1, 1, 1, 0, 0 },
+//                        { 1, 1, 1, 1, 1, 0, 0, 1, 1, 1 },
+//                        { 0, 0, 1, 0, 0, 1, 1, 0, 0, 1 },
+//                };
+        int[][] mat =
+                {
+                        { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 },
+                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 },
+                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 },
+                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 },
+                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 },
+                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 },
+                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 },
+                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 },
+                        { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+                };
+
+        mazeSolver = new MazeSolver(mat,new int[]{0,0,9,9});
+        for (Pos pos : mazeSolver.getRoute()) {
+            Log.d(TAG, "DrawView: "+pos.getX()+",\t"+pos.getY());
+        }
+        drawMap(mat);
 
     }
 
@@ -83,6 +116,37 @@ public class DrawView extends View {
 
         }
     }
+    private void drawMap(int[][] map){
+        int map_length = map.length;
+        int map_width = map[0].length;
+        Log.d(TAG, "drawMap: l\t"+length);
+        Log.d(TAG, "drawMap: w\t"+width);
+        int ratio_x = 8;
+        int ratio_y = 6;
+        int shift_x =100;
+        int shift_y =30;
+        float cabinet_width = (float) (width /ratio_x*0.5);
+        float cabinet_gap = 5f;
+        Log.d(TAG, "drawMap: cabinet_width\t"+cabinet_width);
+
+        hashMap = new HashMap<>();
+        mapCenter = new HashMap<>();
+        for (int i = 0; i < map_width; i++) {
+            for (int j = 0; j < map_length; j++) {
+                int left = (int) (shift_x +i*cabinet_width);
+                int top = (int) (shift_y+j*cabinet_width);
+                int right = (int) (left+cabinet_width-cabinet_gap);
+                int bottom = (int) (top+cabinet_width-cabinet_gap);
+                int[] num = new int[]{left,top,right,bottom};
+                hashMap.put(num,map[i][j]);
+                Pos po = new Pos(i, j);
+                Pos center = new Pos((left+right)/2, (top+bottom)/2);
+                mapCenter.put(po,center);
+            }
+        }
+
+
+    }
 
     private void drawCabinets() {
         int ratio_x = 7;
@@ -100,7 +164,7 @@ public class DrawView extends View {
             int bottom = (int) (top+cabinet_length);
             int[] num = new int[]{left,top,right,bottom};
             position.add(num);
-            Log.d(TAG, "DrawView: "+left+"\t"+top+"\t"+right+"\t"+bottom);
+            Log.d(TAG, "DrawView1: "+left+"\t"+top+"\t"+right+"\t"+bottom);
         }
     }
 
@@ -129,14 +193,6 @@ public class DrawView extends View {
 
     }
 
-//    public DrawView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-//        super(context, attrs, defStyleAttr);
-//    }
-//
-//    public DrawView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-//        super(context, attrs, defStyleAttr, defStyleRes);
-//    }
-
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -154,32 +210,35 @@ public class DrawView extends View {
         paint.setColor(Color.YELLOW);
         canvas.drawRect(33, 33, 77, 60, paint );
 
-        //cabinet
-//        paint.setColor(Color.BLACK);
-//        paint.setStyle(Paint.Style.STROKE);
-//        paint.setStrokeWidth(3);
-//        for (int[] pos : position) {
-//            canvas.drawRect(pos[0],pos[1],pos[2],pos[3],paint);
-//        }
-
-
-        paint.setColor(Color.GRAY);
-        for (int[] pos : position) {
-            for (int[] drawer : drawDrawer(pos)) {
+        if(hashMap!=null){
+            for (int[] drawer : hashMap.keySet()) {
+                if(hashMap.get(drawer)==0){
+                    paint.setColor(Color.GRAY);
+                }
+                else{
+                    paint.setColor(Color.BLUE);
+                }
+                Log.d(TAG, "onDraw: "+"["+drawer[0]+","+drawer[1]+","+drawer[2]+","+drawer[3]+"]\t"+hashMap.get(drawer));
                 canvas.drawRect(drawer[0],drawer[1],drawer[2],drawer[3],paint);
             }
         }
-
-        paint.setColor(Color.RED);
-        for (int i = 0; i < position.size(); i++) {
-            if(target_cabinet.keySet().contains(i)){
-                int[] pos = position.get(i);
-                List<int[]> drawers = drawDrawer(pos);
-                int[] drawer = drawers.get(i);
-                canvas.drawRect(drawer[0],drawer[1],drawer[2],drawer[3],paint);
+        if(mazeSolver!=null){
+            Log.d(TAG, "onDraw maze\t: "+mapCenter.keySet().toString());
+            for (Pos pos : mapCenter.keySet()) {
+                //Log.d(TAG, "onDraw: mapCenter\t"+pos.getX());
+                //Log.d(TAG, "onDraw: mapCenter\t"+pos.getY());
             }
+            for (Pos pos : mazeSolver.getRoute()) {
+                Log.d(TAG, "onDraw maze\t: "+pos.getX());
+                Log.d(TAG, "onDraw maze\t: "+pos.getY());
 
+                Pos center = mapCenter.get(pos);
+                Log.d(TAG, "onDraw: "+center.getY());
+                paint.setColor(Color.WHITE);
+                canvas.drawCircle(center.getX(),center.getY(),15,paint);
+            }
         }
+
 
     }
 }
