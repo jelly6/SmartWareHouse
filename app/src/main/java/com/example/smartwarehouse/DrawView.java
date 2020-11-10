@@ -1,10 +1,14 @@
 package com.example.smartwarehouse;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -35,13 +39,16 @@ public class DrawView extends View {
     private Map<int[], Integer> hashMap;
     private HashMap<Pos, Pos> mapCenter;
     private MazeSolver mazeSolver;
+    private List<Pos> allPoints;
+    private List<Pos> seeds;
+    private Paint transparentPaint;
 
-    public DrawView(Context context) {
-        super(context);
+    public DrawView(Context context) { super(context);
     }
 
     public DrawView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        //display pixels
         DisplayMetrics displayMetrics = new DisplayMetrics();
         ((Activity)getContext()).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         length = displayMetrics.heightPixels-16;
@@ -49,7 +56,7 @@ public class DrawView extends View {
         Log.d(TAG, "DrawView: Height:\t"+ length);
         Log.d(TAG, "DrawView: width:\t"+ width);
 
-
+        //
         Log.d(TAG, "DrawView: parse\t"+stuff[0].charAt(0));
         target_cabinet = new HashMap<>();
         for (int i = 0; i < stuff.length; i++) {
@@ -60,8 +67,6 @@ public class DrawView extends View {
 
         //drawCabinets
         drawCabinets();
-        //drawGrid
-        //drawGrid();
 //        int[][] mat =
 //                {
 //                        { 1, 1, 1, 1, 1, 0, 0, 1, 1, 1 },
@@ -77,44 +82,48 @@ public class DrawView extends View {
 //                };
         int[][] mat =
                 {
-                        { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 },
-                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 },
-                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 },
-                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 },
-                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 },
-                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 },
-                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 },
-                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 },
-                        { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+                        { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,1,1},
+                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,0,1},
+                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,0,1},
+                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,0,1},
+                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,0,1},
+                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,0,1},
+                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,0,1},
+                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,0,1},
+                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,0,1},
+                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,0,1},
+                        { 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,0,1},
+                        { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,1,1},
                 };
+        //material position
+        seeds = new ArrayList<>();
+        //seeds.add(new Pos(0,0));
+        seeds.add(new Pos(3,7));
+        seeds.add(new Pos(8,4));
 
-        mazeSolver = new MazeSolver(mat,new int[]{0,0,9,9});
+        //setUp the paths
+        List<Pos> paths = new ArrayList<>();
+        paths.add(new Pos(0,0));
+        paths.add(new Pos(3,8));
+        paths.add(new Pos(6,3));
+        paths.add(new Pos(11,0));
+        paths.add(new Pos(18,11));
+
+        //getAllPoints
+        allPoints = new ArrayList<>();
+        for (int i = 0; i < paths.size()-1; i++) {
+            Pos pos1 = paths.get(i);
+            Pos pos2 = paths.get(i+1);
+            mazeSolver = new MazeSolver(mat,pos1,pos2);
+            allPoints.addAll(mazeSolver.getRoute());
+
+        }
+
         for (Pos pos : mazeSolver.getRoute()) {
             Log.d(TAG, "DrawView: "+pos.getX()+",\t"+pos.getY());
         }
         drawMap(mat);
 
-    }
-
-    private void drawGrid() {
-        int pixel_x =100;
-        int pixel_y=100;
-        int pixel_size = width/pixel_x;
-        int gap =1;
-        pixels = new ArrayList<>();
-        for (int i = 0; i < 100; i++) {
-            for (int j = 0; j < 100; j++) {
-                int left = i*pixel_size;
-                int top = j*pixel_size;
-                int right = left+pixel_size-gap;
-                int bottom = top+pixel_size-gap;
-                int[] num = new int[]{left,top,right,bottom};
-                pixels.add(num);
-                Log.d(TAG, "DrawView2: "+left+"\t"+top+"\t"+right+"\t"+bottom);
-            }
-
-        }
     }
     private void drawMap(int[][] map){
         int map_length = map.length;
@@ -122,10 +131,11 @@ public class DrawView extends View {
         Log.d(TAG, "drawMap: l\t"+length);
         Log.d(TAG, "drawMap: w\t"+width);
         int ratio_x = 8;
-        int ratio_y = 6;
-        int shift_x =100;
+        int ratio_y = 10;
+        int shift_x =50;
         int shift_y =30;
-        float cabinet_width = (float) (width /ratio_x*0.5);
+        float cabinet_width = (float) (width /ratio_x*0.4);
+        float cabinet_length = (float) (length /ratio_y*0.4);
         float cabinet_gap = 5f;
         Log.d(TAG, "drawMap: cabinet_width\t"+cabinet_width);
 
@@ -134,13 +144,14 @@ public class DrawView extends View {
         for (int i = 0; i < map_width; i++) {
             for (int j = 0; j < map_length; j++) {
                 int left = (int) (shift_x +i*cabinet_width);
-                int top = (int) (shift_y+j*cabinet_width);
+                int top = (int) (shift_y+j*cabinet_length);
                 int right = (int) (left+cabinet_width-cabinet_gap);
-                int bottom = (int) (top+cabinet_width-cabinet_gap);
+                int bottom = (int) (top+cabinet_length-cabinet_gap);
                 int[] num = new int[]{left,top,right,bottom};
-                hashMap.put(num,map[i][j]);
-                Pos po = new Pos(i, j);
+                hashMap.put(num,map[j][i]);
+                Pos po = new Pos(j, i);
                 Pos center = new Pos((left+right)/2, (top+bottom)/2);
+//                Pos center = new Pos((left+right)/2, (top+bottom)/2);
                 mapCenter.put(po,center);
             }
         }
@@ -196,6 +207,9 @@ public class DrawView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        transparentPaint = new Paint();
+        transparentPaint.setARGB(0x77,0xff,0x00,0x00);
+
         paint.setColor(Color.BLACK);
         paint.setStrokeWidth(3);
         canvas.drawRect(30,30,80,80,paint);
@@ -213,10 +227,10 @@ public class DrawView extends View {
         if(hashMap!=null){
             for (int[] drawer : hashMap.keySet()) {
                 if(hashMap.get(drawer)==0){
-                    paint.setColor(Color.GRAY);
+                    paint.setColor(Color.BLUE);
                 }
                 else{
-                    paint.setColor(Color.BLUE);
+                    paint.setARGB(10,100,100,100);
                 }
                 Log.d(TAG, "onDraw: "+"["+drawer[0]+","+drawer[1]+","+drawer[2]+","+drawer[3]+"]\t"+hashMap.get(drawer));
                 canvas.drawRect(drawer[0],drawer[1],drawer[2],drawer[3],paint);
@@ -228,17 +242,33 @@ public class DrawView extends View {
                 //Log.d(TAG, "onDraw: mapCenter\t"+pos.getX());
                 //Log.d(TAG, "onDraw: mapCenter\t"+pos.getY());
             }
-            for (Pos pos : mazeSolver.getRoute()) {
+            for (Pos pos : allPoints) {
                 Log.d(TAG, "onDraw maze\t: "+pos.getX());
                 Log.d(TAG, "onDraw maze\t: "+pos.getY());
 
                 Pos center = mapCenter.get(pos);
                 Log.d(TAG, "onDraw: "+center.getY());
-                paint.setColor(Color.WHITE);
-                canvas.drawCircle(center.getX(),center.getY(),15,paint);
+                //transparentPaint.setColor(Color.CYAN);
+                canvas.drawCircle(center.getX(),center.getY(),15,transparentPaint);
+            }
+
+            for (Pos seed : seeds) {
+                Pos ce = mapCenter.get(seed);
+                //Log.d(TAG, "onDraw: "+center.getY());
+                paint.setColor(Color.RED);
+                canvas.drawCircle(ce.getX(),ce.getY(),10,paint);
             }
         }
 
+        new AlertDialog.Builder(getContext())
+                .setTitle("完成!!")
+                .setMessage("最佳化路徑演算完成")
+                .setPositiveButton("OK",null)
+                .show();
+
+
+    }
+    public void setTargets(){
 
     }
 }

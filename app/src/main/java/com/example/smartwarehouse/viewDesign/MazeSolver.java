@@ -39,11 +39,14 @@ public class MazeSolver {
     int[][] map;
     List<Pos> route;
 
-    public MazeSolver(int[][] map,int[] start) {
-        this.map = map;
-        N=map.length;
-        M=map[0].length;
-        route =BFS(map,start[0],start[1],start[2],start[3]);
+    public MazeSolver(int[][] map,Pos start,Pos end) {
+        //this.map = transpose(map);
+        this.map =map;
+        M=map.length;
+        N=map[0].length;
+        Log.d(TAG, "MazeSolver: "+M);
+        Log.d(TAG, "MazeSolver: "+N);
+        route =BFS(map,start.getY(),start.getX(),end.getY(),end.getX());
     }
 
     // Function to check if it is possible to go to position (row, col)
@@ -53,6 +56,16 @@ public class MazeSolver {
     {
         return (row >= 0) && (row < M) && (col >= 0) && (col < N)
                 && mat[row][col] == 1 && !visited[row][col];
+    }
+    public int[][] transpose(int[][] a) {
+        int data[][] = new int[a.length][a[0].length];
+        //System.out.println("轉置前：");
+        for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j <a[0].length; j++) {
+                data[i][j] = a[j][i];
+            }
+        }
+        return data;
     }
 
     // Find Shortest Possible Route in a matrix mat from source
@@ -131,5 +144,13 @@ public class MazeSolver {
 
     public List<Pos> getRoute() {
         return route;
+    }
+    public List<Pos> getRouteFlip(){
+        List<Pos> newRoute = new ArrayList<>();
+        for (Pos pos : route) {
+            Pos newP = new Pos(pos.getY(),pos.getX());
+            newRoute.add(newP);
+        }
+        return newRoute;
     }
 }

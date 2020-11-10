@@ -22,6 +22,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -89,8 +90,12 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
         view.findViewById(R.id.button_first).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                NavHostFragment.findNavController(FirstFragment.this)
-                        .navigate(R.id.action_FirstFragment_to_SecondFragment);
+
+                NavController navController = NavHostFragment.findNavController(FirstFragment.this);
+//                String[] target_positions=new String[]{"A1001","C5010","E8010"};
+//                Bundle bundle=new Bundle();
+//                bundle.putStringArray("POSITIONS",target_positions);
+                navController.navigate(R.id.action_FirstFragment_to_SecondFragment);
             }
         });
 
