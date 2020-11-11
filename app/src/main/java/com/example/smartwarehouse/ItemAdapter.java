@@ -68,10 +68,13 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
             }else{
                 holder.item_check.setImageResource(android.R.drawable.menuitem_background);
             }
-            if(item.getItem_model().contains("LED")){
-                holder.item_model.setBackgroundResource(R.drawable.textview_circle_yellow);
-            }
-            Log.d(TAG, "onBindViewHolder: "+item.getItem_model());
+            try{
+                if(item.getItem_model().contains("LED")){
+                    holder.item_model.setBackgroundResource(R.drawable.textview_circle_yellow);
+                }
+                Log.d(TAG, "onBindViewHolder: "+item.getItem_model());
+            }catch (Exception e){e.printStackTrace();}
+
         }
 
 

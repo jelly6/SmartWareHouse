@@ -42,6 +42,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.gson.Gson;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
@@ -120,7 +121,7 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
                     return;
                 }else{
                     items[0] = new ArrayList<>();
-                    Log.d(TAG, "onEvent: YY"+queryDocumentSnapshots.getDocuments().get(0).getReference().getId());
+                    //Log.d(TAG, "onEvent: YY"+queryDocumentSnapshots.getDocuments().get(0).getReference().getId());
 
                     List<String> spinnerStrings = new ArrayList<>();
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
@@ -137,19 +138,22 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
                                 DocumentSnapshot document = queryDocumentSnapshots.getDocuments().get(position);
                                 items[0]=new ArrayList<>();
                                 for (String key : document.getData().keySet()) {
-                                    Log.d(TAG, "onComplete: tables"+key+"=>"+document.getBoolean(key));
-                                    Item item = new Item();
-                                    item.setItem_model(key);
-                                    item.setChecked(document.getBoolean(key));
+                                    String data= document.getData().get(key).toString();
+                                    Gson gson = new Gson();
+                                    Item item = gson.fromJson(data, Item.class);
+                                    Log.d(TAG, "onComplete: tables"+key+"=>"+item.getPosition());
+
+                                    //item.setItem_model(key);
+                                    //item.setChecked(document.getBoolean(key));
                                     items[0].add(item);
 
                                 }
 
-                                Collections.sort(items[0], new Comparator<Item>(){
-                                    public int compare( Item l1, Item l2 ) {
-                                        // 回傳值: -1 前者比後者小, 0 前者與後者相同, 1 前者比後者大
-                                        return l1.getItem_model().toString().toLowerCase().compareTo(l2.getItem_model().toString().toLowerCase());
-                                    }});
+//                                Collections.sort(items[0], new Comparator<Item>(){
+//                                    public int compare( Item l1, Item l2 ) {
+//                                        // 回傳值: -1 前者比後者小, 0 前者與後者相同, 1 前者比後者大
+//                                        return l1.getItem_model().toString().toLowerCase().compareTo(l2.getItem_model().toString().toLowerCase());
+//                                    }});
                                 itemAdapter=new ItemAdapter(items[0]);
                                 recyclerView.setAdapter(itemAdapter);
                             }

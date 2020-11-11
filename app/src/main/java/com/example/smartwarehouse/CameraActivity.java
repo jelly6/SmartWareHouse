@@ -22,6 +22,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.example.smartwarehouse.model.Item;
 import com.example.smartwarehouse.model.ItemList;
 import com.example.smartwarehouse.model.Material;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -165,13 +166,34 @@ public class CameraActivity extends AppCompatActivity {
                 });
 
         //step2
+        Map<String, Item> checkList2 = new HashMap<>();
         Map<String, Boolean> checkList = new HashMap<>();
+        String[] material_positions=
+                new String[]{"A0501",
+                        "A0650",
+                        "A0701",
+                        "B0821",
+                        "B1841",
+                        "C0115",
+                        "C0315",
+                        "C1415",
+                        "C1515",
+                        "D0415",
+                        "D0555",
+                        "E1545",
+                        "E1635",
+                        "F0663",
+                };
+        int count =0;
         for (String key : mm.keySet()) {
+            Item item=new Item(key,mm.get(key).toString(),material_positions[count],false);
+            count++;
+            checkList2.put(key,item);
             checkList.put(key,false);
         }
         Log.d(TAG, "checkList onViewCreated: "+mm.keySet());
         db.collection("checkList")
-                .add(checkList)
+                .add(checkList2)
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {

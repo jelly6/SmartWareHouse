@@ -9,6 +9,13 @@ public class Item {
     public Item() {
     }
 
+    public Item(String item_model,String item_datecode, String position, boolean checked) {
+        this.item_model = item_model;
+        this.item_datecode = item_datecode;
+        this.position = position;
+        this.checked = checked;
+    }
+
     public String getItem_model() {
         return item_model;
     }
