@@ -42,6 +42,8 @@ public class DrawView extends View {
     private List<Pos> allPoints;
     private List<Pos> seeds;
     private Paint transparentPaint;
+    private Pos start_point;
+    private Pos end_point;
 
     public DrawView(Context context) { super(context);
     }
@@ -98,16 +100,39 @@ public class DrawView extends View {
         //material position
         seeds = new ArrayList<>();
         //seeds.add(new Pos(0,0));
-        seeds.add(new Pos(3,7));
+        seeds.add(new Pos(5,1));
+        seeds.add(new Pos(6,1));
+        seeds.add(new Pos(7,1));
         seeds.add(new Pos(8,4));
+        seeds.add(new Pos(8,5));
+        seeds.add(new Pos(1,7));
+        seeds.add(new Pos(3,7));
+        seeds.add(new Pos(4,8));
+        seeds.add(new Pos(4,10));
+        seeds.add(new Pos(5,8));
+        seeds.add(new Pos(5,10));
+        seeds.add(new Pos(5,14));
+        seeds.add(new Pos(6,14));
+        seeds.add(new Pos(6,16));
 
+        start_point = new Pos(9,11);
+        end_point = new Pos(9,11);
         //setUp the paths
         List<Pos> paths = new ArrayList<>();
-        paths.add(new Pos(0,0));
+        paths.add(start_point);
+        paths.add(new Pos(0,5));
+        paths.add(new Pos(0,6));
+        paths.add(new Pos(0,7));
         paths.add(new Pos(3,8));
+        paths.add(new Pos(6,8));
         paths.add(new Pos(6,3));
-        paths.add(new Pos(11,0));
-        paths.add(new Pos(18,11));
+        paths.add(new Pos(6,1));
+        paths.add(new Pos(9,4));
+        paths.add(new Pos(9,5));
+        paths.add(new Pos(15,5));
+        paths.add(new Pos(15,6));
+
+        paths.add(end_point);
 
         //getAllPoints
         allPoints = new ArrayList<>();
@@ -210,19 +235,36 @@ public class DrawView extends View {
         transparentPaint = new Paint();
         transparentPaint.setARGB(0x77,0xff,0x00,0x00);
 
+
+        //終點位置
         paint.setColor(Color.BLACK);
+        Pos shift_pos = new Pos(start_point.getY(),start_point.getX());
+        int shift_x =mapCenter.get(shift_pos).getX()-50;
+        int shift_y=mapCenter.get(shift_pos).getY()+50;
+
         paint.setStrokeWidth(3);
-        canvas.drawRect(30,30,80,80,paint);
+        canvas.drawRect(shift_x,shift_y,shift_x+50,shift_y+50,paint);
+        paint.setTextSize(40);
+        canvas.drawText("Start",Float.valueOf(shift_x),Float.valueOf(shift_y+100),paint);
+//        paint.setStrokeWidth(0);
+//        paint.setColor(Color.CYAN);
+//        canvas.drawRect(shift_x+3,shift_y+3,shift_x+44,shift_y+44,paint);
+//        paint.setColor(Color.YELLOW);
+//        canvas.drawRect(shift_x+3, shift_y+3, shift_x+44, shift_y+10, paint );
+
+        //起點位置
+        paint.setColor(Color.BLACK);
+        shift_pos = new Pos(end_point.getY(),end_point.getX());
+        shift_x =mapCenter.get(shift_pos).getX()-50;
+        shift_y=mapCenter.get(shift_pos).getY()+50;
+
+        paint.setStrokeWidth(3);
+        canvas.drawRect(shift_x,shift_y,shift_x+50,shift_y+50,paint);
         paint.setStrokeWidth(0);
         paint.setColor(Color.CYAN);
-        canvas.drawRect(33,60,77,77,paint);
-//        paint.setColor(getResources().getColor(R.color.checkList_color_yellow));
-//        paint.setColor(Color.GRAY);
-//        for (int[] pixel : pixels) {
-//            canvas.drawRect(pixel[0],pixel[1],pixel[2],pixel[3],paint);
-//        }
+        canvas.drawRect(shift_x+3,shift_y+3,shift_x+44,shift_y+44,paint);
         paint.setColor(Color.YELLOW);
-        canvas.drawRect(33, 33, 77, 60, paint );
+        canvas.drawRect(shift_x+3, shift_y+3, shift_x+44, shift_y+10, paint );
 
         if(hashMap!=null){
             for (int[] drawer : hashMap.keySet()) {
@@ -255,7 +297,7 @@ public class DrawView extends View {
             for (Pos seed : seeds) {
                 Pos ce = mapCenter.get(seed);
                 //Log.d(TAG, "onDraw: "+center.getY());
-                paint.setColor(Color.RED);
+                paint.setColor(Color.WHITE);
                 canvas.drawCircle(ce.getX(),ce.getY(),10,paint);
             }
         }
