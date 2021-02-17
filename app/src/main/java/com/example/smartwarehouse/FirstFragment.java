@@ -107,7 +107,7 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
         viewUnitsSetup(view);
         collectDataFromCloud();
 
-
+        checkItem();
 
     }
     private void collectDataFromCloud(){
@@ -149,11 +149,11 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
 
                                 }
 
-//                                Collections.sort(items[0], new Comparator<Item>(){
-//                                    public int compare( Item l1, Item l2 ) {
-//                                        // 回傳值: -1 前者比後者小, 0 前者與後者相同, 1 前者比後者大
-//                                        return l1.getItem_model().toString().toLowerCase().compareTo(l2.getItem_model().toString().toLowerCase());
-//                                    }});
+                                Collections.sort(items[0], new Comparator<Item>(){
+                                    public int compare( Item l1, Item l2 ) {
+                                        // 回傳值: -1 前者比後者小, 0 前者與後者相同, 1 前者比後者大
+                                        return l1.getItem_model().toString().toLowerCase().compareTo(l2.getItem_model().toString().toLowerCase());
+                                    }});
                                 itemAdapter=new ItemAdapter(items[0]);
                                 recyclerView.setAdapter(itemAdapter);
                             }
@@ -173,7 +173,7 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
 
     }
 
-    private void checkItem() {
+    public void checkItem() {
         ItemList itemList = new ItemList();
         final String doc = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("DOC",
                 "");
@@ -189,6 +189,9 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
                                 Log.d(TAG, document.getId() + " =>YY " + document.getData().keySet());
                                 for (String key : document.getData().keySet()) {
                                     Log.d(TAG, "onComplete: YY"+key+"=>"+document.getString(key));
+//                                    TODO;
+                                    textView.setText("202006010061");
+                                    Log.d(TAG, "onComplete: check\t"+document.getData());;
                                     if(document.getString(key).toString().equals(textView.getText())) {
                                         Map<String, Object> new_check = new HashMap<>();
                                         new_check.put(key, true);
@@ -196,6 +199,7 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
                                         msg[0] = "取料正確!!";
                                         db.collection("checkList")
                                                 .document(doc)
+
                                                 .update(new_check)
                                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                     @Override
