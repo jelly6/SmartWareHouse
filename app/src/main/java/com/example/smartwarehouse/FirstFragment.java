@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -136,9 +137,12 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
                                 PreferenceManager.getDefaultSharedPreferences(getActivity()).edit()
                                         .putString("DOC",spinnerStrings.get(position)).commit();
                                 DocumentSnapshot document = queryDocumentSnapshots.getDocuments().get(position);
+                                Log.d(TAG, "onItemSelected: "+document.getData().toString());
+
                                 items[0]=new ArrayList<>();
                                 for (String key : document.getData().keySet()) {
                                     String data= document.getData().get(key).toString();
+                                    Log.d(TAG, "onItemSelected: "+data);
                                     Gson gson = new Gson();
                                     Item item = gson.fromJson(data, Item.class);
                                     Log.d(TAG, "onComplete: tables"+key+"=>"+item.getPosition());
@@ -177,30 +181,29 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
         ItemList itemList = new ItemList();
         final String doc = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("DOC",
                 "");
+        Log.d(TAG, "checkItem: doc\t"+doc);
         final String[] msg = {"取料錯誤，請重新取料"};
-        db.collection("tables")
+        db.collection("checkList")
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>(){
+
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
+                        if(task.isSuccessful()){
                             for (QueryDocumentSnapshot document : task.getResult()) {
-
-                                Log.d(TAG, document.getId() + " =>YY " + document.getData().keySet());
+                                String doc1 = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("DOC", "");
                                 for (String key : document.getData().keySet()) {
-                                    Log.d(TAG, "onComplete: YY"+key+"=>"+document.getString(key));
-//                                    TODO;
-                                    textView.setText("202006010061");
-                                    Log.d(TAG, "onComplete: check\t"+document.getData());;
-                                    if(document.getString(key).toString().equals(textView.getText())) {
-                                        Map<String, Object> new_check = new HashMap<>();
-                                        new_check.put(key, true);
-                                        Log.d(TAG, "onComplete: YY"+db.collection("checkList").get().toString());
+                                    String data= document.getData().get(key).toString();
+                                    Log.d(TAG, "onItemSelected: "+data);
+                                    Gson gson = new Gson();
+                                    Item item = gson.fromJson(data, Item.class);
+                                    if(item.getItem_datecode().equals(textView.getText())){
+                                        item.setChecked(true);
                                         msg[0] = "取料正確!!";
-                                        db.collection("checkList")
-                                                .document(doc)
 
-                                                .update(new_check)
+                                        db.collection("checkList")
+                                                .document(doc1)
+                                                .update(item.getItem_model(),item.pushMap())
                                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                     @Override
                                                     public void onSuccess(Void aVoid) {
@@ -216,19 +219,73 @@ public class FirstFragment extends Fragment implements View.OnClickListener {
                                                     }
                                                 });
 
-
-
                                     }
+                                    Log.d(TAG, "onComplete: keyword"+key+"=>"+item.getItem_datecode());
+
+                                    //item.setItem_model(key);
+                                    //item.setChecked(document.getBoolean(key));
+//                                    items[0].add(item);
+//
                                 }
-                                Toast.makeText(getActivity(), msg[0], Toast.LENGTH_LONG).show();
 
                             }
-                            Log.d(TAG, "onComplete: "+items.getKeys());
-                        } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
                         }
                     }
                 });
+
+//        db.collection("tables")
+//                .get()
+//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                        if (task.isSuccessful()) {
+//                            for (QueryDocumentSnapshot document : task.getResult()) {
+//
+//                                Log.d(TAG, document.getId() + " =>YY " + document.getData().keySet());
+//                                for (String key : document.getData().keySet()) {
+//                                    Log.d(TAG, "onComplete: YY"+key+"=>"+document.getString(key));
+////                                    TODO;
+//                                    //textView.setText("202006010061");
+//                                    Log.d(TAG, "onComplete: check\t"+document.getData());;
+//                                    Log.d(TAG, "onComplete: check\t"+document.getString(key));;
+//                                    if(document.getString(key).toString().equals(textView.getText())) {
+//                                        Map<String, Object> new_check = new HashMap<>();
+//                                        new_check.put(key, true);
+//                                        Log.d(TAG, "onComplete: YY\t"+db.collection("checkList").document(doc).collection(key).document().get().toString());
+//
+//                                        msg[0] = "取料正確!!";
+//                                        db.collection("checkList")
+//                                                .document(doc)
+//
+//                                                .update(new_check)
+//                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                                    @Override
+//                                                    public void onSuccess(Void aVoid) {
+//                                                        Log.d(TAG, "onSuccess: YY");
+//                                                        Toast.makeText(getActivity(), msg[0], Toast.LENGTH_LONG).show();
+//                                                    }
+//                                                })
+//                                                .addOnFailureListener(new OnFailureListener() {
+//                                                    @Override
+//                                                    public void onFailure(@NonNull Exception e) {
+//                                                        Log.d(TAG, "onFailure: YY"+e);
+//
+//                                                    }
+//                                                });
+//
+//
+//
+//                                    }
+//                                }
+//                                Toast.makeText(getActivity(), msg[0], Toast.LENGTH_LONG).show();
+//
+//                            }
+//                            Log.d(TAG, "onComplete: "+items.getKeys());
+//                        } else {
+//                            Log.w(TAG, "Error getting documents.", task.getException());
+//                        }
+//                    }
+//                });
 
 
     }
